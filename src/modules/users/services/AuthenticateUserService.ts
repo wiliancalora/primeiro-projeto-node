@@ -1,8 +1,8 @@
+/* eslint-disable prettier/prettier */
 import { compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
-import { compareAsc } from 'date-fns';
-import authConfig from '@config/auth';
 import { injectable, inject } from 'tsyringe';
+import { sign } from 'jsonwebtoken';
+import authConfig from '@config/auth';
 
 import AppError from '@shared/errors/AppError';
 import IUsersRepository from '../repositories/IUsersRepository';
