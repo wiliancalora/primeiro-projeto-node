@@ -1,21 +1,25 @@
 import 'reflect-metadata';
 import AppError from '@shared/errors/AppError';
 
-import FakeNotificationsRepository from '@modules/notifications/repositories/fakes/FakeNotificationsRepositorie.spec';
+import FakeNotificationsRepository from '@modules/notifications/repositories/fakes/FakeNotificationsRepository.spec';
+import FakeCacheProvider from '@shared/container/providers/CacheProvider/fakes/FakeCacheProvider';
 import FakeAppointmentsRepository from '../repositories/fakes/FakeAppointmentsRepository';
 import CreateAppointmentService from './CreateAppointmentService';
 
 let fakeAppointmentsRepository: FakeAppointmentsRepository;
 let fakeNotificationsRepository: FakeNotificationsRepository;
+let fakeCacheProvider: FakeCacheProvider;
 let createAppointment: CreateAppointmentService;
 
 describe('CreateAppointment', () => {
   beforeEach(() => {
     fakeAppointmentsRepository = new FakeAppointmentsRepository();
     fakeNotificationsRepository = new FakeNotificationsRepository();
+    fakeCacheProvider = new FakeCacheProvider();
     createAppointment = new CreateAppointmentService(
       fakeAppointmentsRepository,
       fakeNotificationsRepository,
+      fakeCacheProvider,
     );
   });
 
@@ -34,20 +38,24 @@ describe('CreateAppointment', () => {
     expect(appointment.provider_id).toBe('1231');
   });
 
-  it('should not be able to create a two appointments on the same time', async () => {
-    const appointmentDate = new Date(2020, 4, 10, 11);
+  it('should not be able to create two appointments on the same time', async () => {
+    jest.spyOn(Date, 'now').mockImplementationOnce(() => {
+      return new Date(2020, 4, 10, 11, 0, 0, 0).getTime();
+    });
+
+    const appointmentDate = new Date(2020, 4, 11, 13);
 
     await createAppointment.execute({
       date: appointmentDate,
-      user_id: '123123',
-      provider_id: '1231',
+      user_id: 'user_id',
+      provider_id: 'provider_id',
     });
 
     await expect(
       createAppointment.execute({
         date: appointmentDate,
-        user_id: '123123',
-        provider_id: '1231',
+        user_id: 'user_id',
+        provider_id: 'provider_id',
       }),
     ).rejects.toBeInstanceOf(AppError);
   });
